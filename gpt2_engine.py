@@ -3,7 +3,7 @@ from lm_scorer.models.gpt2 import GPT2LMScorer
 
 class GPT2_Engine():
 
-    def __init__(self, model_path='lib/model/'):
+    def __init__(self, model_path='model/'):
 
         print("Initialising GPT2 chess engine...")
         self.scorer = GPT2LMScorer(model_name=model_path)
@@ -18,7 +18,6 @@ class GPT2_Engine():
             next_moves.append(str(next_move))
         scores = self.scorer.sentence_score([self.moves + move for move in next_moves], reduce="prod")
         best_move = next_moves[scores.index(max(scores))]
-        print("Best move:", best_move)
 
         return best_move
 
@@ -59,8 +58,6 @@ class GPT2_Engine():
         next_move = self.find_best_move()
         self.board.push(chess.Move.from_uci(next_move))
         next_move_coords = self.uci_to_coords(next_move)
-        print("next move coords:", next_move_coords)
-        print("board now:", self.board)
 
         return next_move_coords
 

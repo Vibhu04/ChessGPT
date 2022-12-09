@@ -1,6 +1,13 @@
+"""
+ACKNOWLEDGMENTS: PASIDU PERERA
+The code for the GUI interface and logic in this file has been taken from Pasidu Perera's Medium blog post:
+https://levelup.gitconnected.com/chess-python-ca4532c7f5a4
+"""
+
+
 import pygame
 import sys
-from lib.gpt2_engine import GPT2_Engine
+from gpt2_engine import GPT2_Engine
 
 
 board = [['  ' for i in range(8)] for i in range(8)]
@@ -16,18 +23,18 @@ class Piece:
 
 ## Creates instances of chess pieces, so far we got: pawn, king, rook and bishop
 ## The first parameter defines what team its on and the second, what type of piece it is
-bp = Piece('b', 'p', 'graph/b_pawn.png')
-wp = Piece('w', 'p', 'graph/w_pawn.png')
-bk = Piece('b', 'k', 'graph/b_king.png')
-wk = Piece('w', 'k', 'graph/w_king.png')
-br = Piece('b', 'r', 'graph/b_rook.png')
-wr = Piece('w', 'r', 'graph/w_rook.png')
-bb = Piece('b', 'b', 'graph/b_bishop.png')
-wb = Piece('w', 'b', 'graph/w_bishop.png')
-bq = Piece('b', 'q', 'graph/b_queen.png')
-wq = Piece('w', 'q', 'graph/w_queen.png')
-bkn = Piece('b', 'kn', 'graph/b_knight.png')
-wkn = Piece('w', 'kn', 'graph/w_knight.png')
+bp = Piece('b', 'p', 'assets/b_pawn.png')
+wp = Piece('w', 'p', 'assets/w_pawn.png')
+bk = Piece('b', 'k', 'assets/b_king.png')
+wk = Piece('w', 'k', 'assets/w_king.png')
+br = Piece('b', 'r', 'assets/b_rook.png')
+wr = Piece('w', 'r', 'assets/w_rook.png')
+bb = Piece('b', 'b', 'assets/b_bishop.png')
+wb = Piece('w', 'b', 'assets/w_bishop.png')
+bq = Piece('b', 'q', 'assets/b_queen.png')
+wq = Piece('w', 'q', 'assets/w_queen.png')
+bkn = Piece('b', 'kn', 'assets/b_knight.png')
+wkn = Piece('w', 'kn', 'assets/w_knight.png')
 
 
 starting_order = {(0, 0): pygame.image.load(br.image), (1, 0): pygame.image.load(bkn.image),
@@ -384,7 +391,7 @@ you can get those co-ordinates using my old function for swap"""
 
 
 
-def start(WIN, WIDTH):
+def start(model_path, WIDTH):
     moves = 0
     selected = False
     piece_to_move=[]
@@ -393,7 +400,7 @@ def start(WIN, WIDTH):
     WIN = pygame.display.set_mode((WIDTH, WIDTH))
     pygame.display.set_caption("Chess")
     create_board(board)
-    engine = GPT2_Engine()
+    engine = GPT2_Engine(model_path)
 
     while True:
         pygame.time.delay(50) ##stops cpu dying

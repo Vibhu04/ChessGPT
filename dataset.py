@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset
 
 class ChessDataset(Dataset):
-    def __init__(self, dataset_file = 'data/chess_dataset.txt'):
+    def __init__(self, dataset_file = 'data/dataset.txt'):
         super().__init__()
         self.eot = "<|endoftext|>"
         self.chess_file = open(dataset_file, 'r')

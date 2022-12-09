@@ -1,11 +1,10 @@
 import torch
 from torch.utils.data import DataLoader
-import chess
-from data.dataset import ChessDataset
+from dataset import ChessDataset
 
-def load_dataloaders(train_split=0.95):
+def load_dataloaders(dataset_path, train_split):
 
-    full_dataset = ChessDataset()
+    full_dataset = ChessDataset(dataset_path)
     train_size = int(train_split * len(full_dataset))
     val_size = len(full_dataset) - train_size
     train_dataset, val_dataset = torch.utils.data.random_split(full_dataset, [train_size, val_size])

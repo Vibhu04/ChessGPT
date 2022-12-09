@@ -1,33 +1,32 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim import AdamW
-from transformers import GPT2LMHeadModel
-from transformers import GPT2Tokenizer
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 from transformers import get_linear_schedule_with_warmup
+import warnings
 import os
 from tqdm import tqdm
-from lib import utils
+import argparse
+import utils
 
 
 
-def train(
-    epochs=10, 
-    base_lr=0.001, 
-    save_model_name='model/model.pth', 
-    save_model_freq=500, 
-    load_existing_model=True,
-    val_freq=500, 
-    write_logs=True, 
-    delete_prev_logs=True
-    ):
+def train():
+
+    parser = arg_parser()
+    args, unknown = parser.parse_known_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    train_loader, val_loader = utils.load_dataloaders(train_split=0.99)
+    train_loader, val_loader = utils.load_dataloaders(dataset_path=args.dataset_path, train_split=args.train_split)
     print("Training:", len(train_loader))
     print("Validation:", len(val_loader))
-    if write_logs:
+
+    if not os.path.exists(args.save_model_path):
+        os.makedirs(args.save_model_path)
+
+    if args.write_logs:
         writer = SummaryWriter('runs')
-    if delete_prev_logs:
+    if args.delete_prev_logs:
         for root, dirs, files in os.walk('runs'):
             for file in files:
                 os.remove(os.path.join(root, file))
@@ -35,14 +34,20 @@ def train(
 
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     
-    model = GPT2LMHeadModel.from_pretrained('gpt2')
-    if load_existing_model:
-        state_dict = torch.load(save_model_name, map_location=torch.device(device))
-        model.load_state_dict(state_dict)
-        print("Existing model loaded")
+
+    if args.load_existing_model:
+        try:
+            model = GPT2LMHeadModel.from_pretrained(args.save_model_path)
+            print("Existing model loaded")
+        except:
+            warnings.warn('No model was found in the model directory that was provided. Using the pretrained model '
+                          'provided by HF instead.')
+            model = GPT2LMHeadModel.from_pretrained('gpt2')
+    else:
+        model = GPT2LMHeadModel.from_pretrained('gpt2')
 
     model = model.to(device)
-    optimizer = AdamW(model.parameters(), weight_decay=0.1, lr=base_lr) 
+    optimizer = AdamW(model.parameters(), weight_decay=args.weight_decay, lr=args.base_lr)
     scheduler = get_linear_schedule_with_warmup(
             optimizer, num_warmup_steps=5000, num_training_steps=-1
         )
@@ -50,11 +55,10 @@ def train(
 
     max_len = 1000
     inp_tens = None
-    batch_size = 20
     batch_count = 0
     count = 0
 
-    for epoch in range(epochs):
+    for epoch in range(args.epochs):
 
         print(f"EPOCH {epoch} started" + '=' * 30)
         for train_counter, train_batch in enumerate(train_loader, 0):
@@ -70,27 +74,27 @@ def train(
                 continue
 
             outputs = model(inp_tens, labels=inp_tens)
-            loss, logits = outputs[:2]                        
+            loss = outputs[0]
             loss.backward()
             count += 1
             print('[%d, %5d] train loss: %.5f' % (epoch + 1, count, loss.detach().data))
-            if write_logs:
+            if args.write_logs:
                 writer.add_scalar("train_loss", float(loss.detach().data), count)
 
-            if count % batch_size == 0:
+            if count % args.batch_size == 0:
                 batch_count += 1
                 optimizer.step()
                 scheduler.step() 
                 optimizer.zero_grad()
                 model.zero_grad()
-                print("Stepping")
 
-            if count % save_model_freq == 0:
-                torch.save(model.state_dict(), save_model_name)
+            if count % args.save_model_freq == 0:
+                model.save_pretrained(args.save_model_path)
+                tokenizer.save_pretrained(args.save_model_path)
                 print("Model saved")
 
-            if count % val_freq == 0:
-                validate(model, val_loader, tokenizer, device, count // val_freq, writer)
+            if count % args.val_freq == 0:
+                validate(model, val_loader, tokenizer, device, count // args.val_freq, writer)
                 model.train()
 
             inp_tens = game_tens
@@ -117,7 +121,7 @@ def validate(model, val_loader, tokenizer, device, batch_count, writer):
                 continue
 
             outputs = model(inp_tens, labels=inp_tens)
-            loss, logits = outputs[:2]                        
+            loss = outputs[0]
             counter += 1
             running_loss += loss
 
@@ -127,6 +131,26 @@ def validate(model, val_loader, tokenizer, device, batch_count, writer):
                                                      running_loss / counter))
         writer.add_scalar('val loss', running_loss / counter,
                           batch_count)
+
+
+def arg_parser():
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset_path', type=str, default='data/dataset.txt', help="Path to the dataset file.")
+    parser.add_argument('--epochs', type=int, default=10, help="Number of training epochs.")
+    parser.add_argument('--batch_size', type=int, default=20, help="Training batch size.")
+    parser.add_argument('--base_lr', type=int, default=0.001, help="Base learning rate.")
+    parser.add_argument('--weight_decay', type=float, default=0.1, help="Value of weight decay for AdamW.")
+    parser.add_argument('--save_model_path', type=str, default='model/', help="Path for saving model.")
+    parser.add_argument('--save_model_freq', type=int, default=500, help="Frequency of saving the model.")
+    parser.add_argument('--load_existing_model', type=bool, default=False, help="Load an existing model for training.")
+    parser.add_argument('--val_freq', type=int, default=500, help="Frequency of performing validation.")
+    parser.add_argument('--train_split', type=float, default=0.99, help="Ratio of total samples used for training.")
+    parser.add_argument('--write_logs', type=bool, default=True, help="Use tensorboard to write logs.")
+    parser.add_argument('--delete_prev_logs', type=bool, default=True, help="Delete the previously stored logs.")
+
+    return parser
+
 
 
 

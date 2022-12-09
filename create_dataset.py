@@ -18,7 +18,7 @@ def main():
     num_games = args.num_games
     print("Preparing to load " + str(num_games) + " games.")
         
-    dataset_name = "dataset_uci.txt"
+    dataset_name = "dataset.txt"
     eot_token = "<|endoftext|>"
 
     valid_game_count = 0
