@@ -1,0 +1,6 @@
+chess
+torch
+lm_scorer
+pygame
+transformers
+tqdm
