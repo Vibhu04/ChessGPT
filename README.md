@@ -11,7 +11,7 @@ A chess engine made using OpenAI's GPT2.
 Install the requirements with:
 
 ```bash
-pip install -r requirements.txt
+$ pip install -r requirements.txt
 ```
 
     
@@ -144,6 +144,21 @@ After having trained the model, the project directory should have a structure si
 Finally, to test the model:
 ```
 $ python play.py --model_path='model/'
+```
+The following flags can be specified:
+```
+$ python play.py --help
+usage: play.py [-h] [--model_path MODEL_PATH] [--beam_width BEAM_WIDTH]
+               [--beam_length BEAM_LENGTH]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+                        Location of the GPT2 model.
+  --beam_width BEAM_WIDTH
+                        Beam width for inference.
+  --beam_length BEAM_LENGTH
+                        Beam length for inference.
 ```
 This will open a chess GUI interface made with pygame and taken from [PasiduPerera](https://pererapm.medium.com/)'s Medium blog [post](https://levelup.gitconnected.com/chess-python-ca4532c7f5a4). I have integrated the GPT2 chess engine with this GUI.
 
