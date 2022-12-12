@@ -19,12 +19,12 @@ pip install -r requirements.txt
 ### Download archive
 Download the large KingBase2018 chess archive with:
 
-```bash
-python download.py
+```
+$ python download.py
 ```
 The following flags can be specified:
-```bash
-python download.py --help
+```
+$ python download.py --help
 usage: download.py [-h] [--download_location DOWNLOAD_LOCATION]
                    [--extract_location EXTRACT_LOCATION]
 
@@ -39,12 +39,12 @@ optional arguments:
 ### Create dataset
 Create a .txt dataset file from the .pgn files downloaded previously:
 
-```bash
-python create_dataset.py
+```
+$ python create_dataset.py
 ```
 The following flags can be specified:
-```bash
-python create_dataset.py --help
+```
+$ python create_dataset.py --help
 usage: create_dataset.py [-h] [--dataset_folder DATASET_FOLDER]
                          [--pgn_folder PGN_FOLDER] [--num_games NUM_GAMES]
 
@@ -61,12 +61,12 @@ optional arguments:
 The dataset will be in the [UCI](https://en.wikipedia.org/wiki/Universal_Chess_Interface) format and will contain a single game on every line.
 ### Train the model
 Start training the GPT2 model with:
-```bash
-python train.py --dataset_path='path/to/dataset'
+```
+$ python train.py --dataset_path='path/to/dataset'
 ```
 The following flags can be specified:
-```bash
-python train.py --help
+```
+$ python train.py --help
 usage: train.py [-h] [--dataset_path DATASET_PATH] [--epochs EPOCHS]
                 [--batch_size BATCH_SIZE] [--base_lr BASE_LR]
                 [--weight_decay WEIGHT_DECAY]
@@ -142,8 +142,8 @@ After having trained the model, the project directory should have a structure si
 ```
 
 Finally, to test the model:
-```bash
-python play.py --model_path='model/'
+```
+$ python play.py --model_path='model/'
 ```
 This will open a chess GUI interface made with pygame and taken from [PasiduPerera](https://pererapm.medium.com/)'s Medium blog [post](https://levelup.gitconnected.com/chess-python-ca4532c7f5a4). I have integrated the GPT2 chess engine with this GUI.
 
