@@ -441,6 +441,8 @@ def start(model_path, WIDTH):
                             update_display(WIN, grid, 8, WIDTH)
                             engine_move = engine.get_next_move((col, row), (y, x))
                             src, dest = engine_move
+                            board[dest[1]][dest[0]] = board[src[1]][src[0]]
+                            board[src[1]][src[0]] = '  '
                             Do_Move(src, dest, WIN)
                             moves += 1
                             print(convert_to_readable(board))
@@ -461,6 +463,8 @@ def start(model_path, WIDTH):
                             update_display(WIN, grid, 8, WIDTH)
                             engine_move = engine.get_next_move((col, row), (y, x))
                             src, dest = engine_move
+                            board[dest[1]][dest[0]] = board[src[1]][src[0]]
+                            board[src[1]][src[0]] = '  '
                             Do_Move(src, dest, WIN)
                             moves += 1
                             print(convert_to_readable(board))

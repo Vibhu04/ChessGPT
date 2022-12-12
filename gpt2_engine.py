@@ -1,23 +1,62 @@
 import chess
+import numpy as np
+import copy
 from lm_scorer.models.gpt2 import GPT2LMScorer
+
 
 class GPT2_Engine():
 
-    def __init__(self, model_path='model/'):
+    def __init__(self, model_path='model/', beam_width=3, beam_length=3, verbose=False):
 
         print("Initialising GPT2 chess engine...")
         self.scorer = GPT2LMScorer(model_name=model_path)
         self.board = chess.Board()
         self.moves = ''
+        self.beam_width = beam_width
+        self.beam_length = beam_length
+        self.verbose = verbose
 
 
     def find_best_move(self):
 
-        next_moves = []
-        for next_move in list(self.board.legal_moves):
-            next_moves.append(str(next_move))
-        scores = self.scorer.sentence_score([self.moves + move for move in next_moves], reduce="prod")
-        best_move = next_moves[scores.index(max(scores))]
+        boards = [copy.copy(self.board) for i in range(self.beam_width)]
+        moves = [copy.copy(self.moves) for i in range(self.beam_width)]
+        for i in range(self.beam_length):
+            if i == 0:
+                next_moves = [str(next_move) for next_move in list(self.board.legal_moves)]
+                scores = self.scorer.sentence_score([self.moves + move for move in next_moves], reduce="prod")
+                scores = np.array(scores)
+                bw = min(self.beam_width, scores.shape[0])
+                best_indices = np.argpartition(scores, -1 * bw)[-1 * bw:]
+                best_indices = best_indices[np.argsort(scores[best_indices])[::-1]]
+                best_moves = [next_moves[ind] for ind in best_indices]
+                for j in range(bw):
+                    boards[j].push(chess.Move.from_uci(best_moves[j]))
+                    moves[j] += best_moves[j] + ' '
+            else:
+                next_moves = [[str(next_move) for next_move in list(boards[j].legal_moves)] for j in range(self.beam_width)]
+                scores = []
+                for j in range(self.beam_width):
+                    scores.append(self.scorer.sentence_score([moves[j] + next_move for next_move in next_moves[j]], reduce="prod"))
+                max_possible = len(max(scores, key=len))
+                scores = np.array([x + [-1] * (max_possible - len(x)) for x in scores])
+                scores = scores.flatten()
+                bw = min(self.beam_width, (scores >= 0).sum())
+                best_indices = np.argpartition(scores, -1 * bw)[-1 * bw:]
+                best_indices = best_indices[np.argsort(scores[best_indices])[::-1]]
+                temp_boards = []
+                temp_moves = []
+                for j in range(bw):
+                    board = best_indices[j] // max_possible
+                    move_index = best_indices[j] % max_possible
+                    move = next_moves[board][move_index]
+                    temp_moves.append(moves[board] + move + ' ')
+                    temp_boards.append(copy.copy(boards[board]))
+                    temp_boards[j].push(chess.Move.from_uci(move))
+                boards = temp_boards
+                moves = temp_moves
+
+        best_move = moves[0].split(' ')[-1 * self.beam_length -1]
 
         return best_move
 
@@ -54,9 +93,15 @@ class GPT2_Engine():
 
         move_uci = self.coords_to_uci(prev_pos, next_pos)
         self.board.push(chess.Move.from_uci(move_uci))
+        if self.board.is_game_over():
+            print("Game Over.")
+            return
         self.moves += move_uci + ' '
         next_move = self.find_best_move()
         self.board.push(chess.Move.from_uci(next_move))
+        if self.board.is_game_over():
+            print("Game Over.")
+            return
         next_move_coords = self.uci_to_coords(next_move)
 
         return next_move_coords

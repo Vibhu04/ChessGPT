@@ -17,6 +17,8 @@ def train():
     args, unknown = parser.parse_known_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    print("device:", device)
+    input()
     train_loader, val_loader = utils.load_dataloaders(dataset_path=args.dataset_path, train_split=args.train_split)
     print("Training:", len(train_loader))
     print("Validation:", len(val_loader))
