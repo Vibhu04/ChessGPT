@@ -8,7 +8,7 @@ A chess engine made using OpenAI's GPT2.
 
 ## Installation
 
-Install the requirements with:
+After cloning the repository, install the requirements with:
 
 ```bash
 $ pip install -r requirements.txt
