@@ -161,6 +161,7 @@ optional arguments:
                         Beam length for inference.
 ```
 This will open a chess GUI interface made with pygame and taken from [PasiduPerera](https://pererapm.medium.com/)'s Medium blog [post](https://levelup.gitconnected.com/chess-python-ca4532c7f5a4). I have integrated the GPT2 chess engine with this GUI.
+
 Beam search is used during inference and its width and length flags can be specified.
 
 *Note: there could be some issues with the GUI logic that need to be fixed.*
