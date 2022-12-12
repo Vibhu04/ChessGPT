@@ -391,7 +391,7 @@ you can get those co-ordinates using my old function for swap"""
 
 
 
-def start(model_path, WIDTH):
+def start(model_path, beam_width, beam_length, WIDTH):
     moves = 0
     selected = False
     piece_to_move=[]
@@ -400,7 +400,7 @@ def start(model_path, WIDTH):
     WIN = pygame.display.set_mode((WIDTH, WIDTH))
     pygame.display.set_caption("Chess")
     create_board(board)
-    engine = GPT2_Engine(model_path)
+    engine = GPT2_Engine(model_path, beam_width, beam_length)
 
     while True:
         pygame.time.delay(50) ##stops cpu dying
